@@ -1,0 +1,27 @@
+{
+  "name": "dev-profile",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "core-util-is": "^1.0.2",
+    "fs": "^0.0.1-security",
+    "inquirer": "^7.0.4",
+    "pdf-puppeteer": "^1.1.10"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dameonc13/Dev-Profile.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dameonc13/Dev-Profile/issues"
+  },
+  "homepage": "https://github.com/dameonc13/Dev-Profile#readme"
+}

@@ -55,45 +55,57 @@ async function getStarInfo(answers) {
 
 const colors = {
     green: {
-      wrapperBackground: "#E6E1C3",
-      headerBackground: "#C1C72C",
-      headerColor: "black",
-      photoBorderColor: "#black"
+        wrapperBackground: "#E6E1C3",
+        headerBackground: "#C1C72C",
+        headerColor: "black",
+        photoBorderColor: "#black"
     },
     blue: {
-      wrapperBackground: "#5F64D3",
-      headerBackground: "#26175A",
-      headerColor: "white",
-      photoBorderColor: "#73448C"
+        wrapperBackground: "#5F64D3",
+        headerBackground: "#26175A",
+        headerColor: "white",
+        photoBorderColor: "#73448C"
     },
     pink: {
-      wrapperBackground: "#879CDF",
-      headerBackground: "#FF8374",
-      headerColor: "white",
-      photoBorderColor: "#FEE24C"
+        wrapperBackground: "#879CDF",
+        headerBackground: "#FF8374",
+        headerColor: "white",
+        photoBorderColor: "#FEE24C"
     },
     red: {
-      wrapperBackground: "#DE9967",
-      headerBackground: "#870603",
-      headerColor: "white",
-      photoBorderColor: "white"
+        wrapperBackground: "#DE9967",
+        headerBackground: "#870603",
+        headerColor: "white",
+        photoBorderColor: "white"
     }
 };
 
+var options = {
+    format : "Letter",
+    printbackground : true,
+    margin: {
+        top : "0px",
+        right: "0px",
+        bottom: "0px",
+        left: "0px"
+    }
+}
 
 async function init() {
 
     try {
         const answers = await promptUser();
+
+
         const Userinfo = await getUser(answers);
         const star = await getStarInfo(answers)
-        
 
-        const html = generateHTML(answers , Userinfo, star  );
+
+        const html = generateHTML(answers, Userinfo, star);
 
         await writeFileAsync("index.html", html);
 
-        convertAsync(html, generatePDF);
+        convertAsync(html, generatePDF, options);
 
         console.log("Successfully wrote to index.html");
     }
@@ -104,7 +116,7 @@ async function init() {
 
 init();
 
-function generateHTML(answers, Userinfo, star ) {
+function generateHTML(answers, Userinfo, star) {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -131,6 +143,7 @@ function generateHTML(answers, Userinfo, star ) {
   }
   
   .wrapper {
+    background-color: ${colors[answers.color].wrapperBackground};
   height: 33.33333%;
   }
   
@@ -150,7 +163,9 @@ function generateHTML(answers, Userinfo, star ) {
   }
   
   .aboutMe {
-  position: relative;
+    background-color:${colors[answers.color].headerBackground};
+   
+    position: relative;
   margin-top: 80px;
   margin-right:auto;
   margin-bottom:0px;
@@ -172,7 +187,7 @@ function generateHTML(answers, Userinfo, star ) {
   border-radius: 50%;
   object-fit: cover;
   margin-top: -50px;
- 
+border: 6px solid ${colors[answers.color].photoBorderColor};
   box-shadow: rgba(0, 0, 0, 0.3) 4px 1px 20px 4px;
   }
   .aboutMe h1, .aboutMe h2 {
@@ -187,6 +202,7 @@ function generateHTML(answers, Userinfo, star ) {
   text-align: center;
   padding: 20px 0;
   font-size: 1.1em;
+  color :black
   }
   .loc {
   display: inline-block;
@@ -203,7 +219,8 @@ function generateHTML(answers, Userinfo, star ) {
   .card {
   padding: 20px;
   border-radius: 6px;
-
+background-color :${colors[answers.color].headerBackground};
+color: ${colors[answers.color].headerColor};
   margin: 20px;
   }
   
@@ -229,12 +246,13 @@ function generateHTML(answers, Userinfo, star ) {
     <div class="container-fluid">
     <div class="row wrapper">
         <div class="aboutMe">
-            <img src="${Userinfo.avatar_url}" alt="profile picture"></img>    
-            <h1>Hi!</h1>    
-            <h1>My name is ${Userinfo.name}!</h1>    
+            <img src="${Userinfo.avatar_url}" alt="profile picture"></img>
             
             <div class="row loc">
-                <div class="col loc">${Userinfo.location}<h3></h3></a></div>
+            <h1>Hi!</h1>    
+            <div  
+               class="col loc"><h1>My name is ${Userinfo.name}!</h1> 
+                <h3>${Userinfo.location}</h3></a></div>
             </div>
         </div>
     </div>
@@ -250,19 +268,30 @@ function generateHTML(answers, Userinfo, star ) {
             <div class="row">
                 <div class="col card">
                     <h3>Public Repositories</h3>
-                    <h3>12</h3>
+                    <h3>${Userinfo.public_repos}</h3>
                 </div>
                 <div class="col card">
                     <h3>Followers</h3>
-                    <h3>3</h3>
+                    <h3>${Userinfo.followers}</h3>
                 </div>
+               
             </div>
+
             <div class="row">
                 <div class="col card">
-                    <h3>Following</h3>
-                    <h3>3</h3>
+                <h3>Following</h3>
+                <h3> ${Userinfo.following}</h3>
                 </div>
+                <div class="col card">
+                <h3>Stars</h3>
+                <h3> ${star.length}</h3>
+                </div>
+               
             </div>
+
+            
+
+          
         </div>
         
     </div>
