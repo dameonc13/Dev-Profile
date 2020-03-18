@@ -2,9 +2,10 @@ const inquirer = require("inquirer");
 const fs = require("fs");
 const util = require("util");
 const axios = require("axios");
-const convertHTMLtoPDF = require("pdf-puppeteer");
+
+const htmlToPDF = require("puppeteer");
 const writeFileAsync = util.promisify(fs.writeFile);
-const convertAsync = util.promisify(convertHTMLtoPDF);
+
 
 
 
@@ -36,16 +37,6 @@ async function getUser(answers) {
 
 
 
-
-var generatePDF = function (PDF) {
-
-    fs.writeFile("githubProfile.pdf", PDF, "utf8", function (err) {
-        if (err) {
-            return console.log(err);
-        }
-        console.log("new pdf success!");
-    })
-}
 
 async function getStarInfo(answers) {
     const queryUrl = `https://api.github.com/users/${answers.username}/starred`
@@ -97,26 +88,41 @@ async function init() {
         const answers = await promptUser();
 
 
-        const Userinfo = await getUser(answers);
+        const userInfo = await getUser(answers);
         const star = await getStarInfo(answers)
 
 
-        const html = generateHTML(answers, Userinfo, star);
+        const html = generateHTML(answers, userInfo, star);
 
         await writeFileAsync("index.html", html);
 
-        convertAsync(html, generatePDF, options);
+      
+        
+        await writeToPDF();
 
-        console.log("Successfully wrote to index.html");
+        
+        
     }
     catch (err) {
         console.log(err);
     }
 }
 
+async function writeToPDF(){
+    const browser = await htmlToPDF.launch({headless: true , slowMo: 150})
+    const page = await browser.newPage();
+    const readHtml = fs.readFileSync("index.html", "utf8")
+    await page.setContent(readHtml)
+    await page.pdf({
+        path: "gitBio2.pdf",
+    });
+    console.log("PDF Sucess");
+    await browser.close()
+    
+}
 init();
 
-function generateHTML(answers, Userinfo, star) {
+function generateHTML(answers,  userInfo, star) {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -148,6 +154,7 @@ function generateHTML(answers, Userinfo, star) {
   }
   
   body {
+    -webkit-print-color-adjust: exact !important;
   background-color: white;
   }
 
@@ -246,13 +253,13 @@ color: ${colors[answers.color].headerColor};
     <div class="container-fluid">
     <div class="row wrapper">
         <div class="aboutMe">
-            <img src="${Userinfo.avatar_url}" alt="profile picture"></img>
+            <img src="${ userInfo.avatar_url}" alt="profile picture"></img>
             
             <div class="row loc">
             <h1>Hi!</h1>    
             <div  
-               class="col loc"><h1>My name is ${Userinfo.name}!</h1> 
-                <h3>${Userinfo.location}</h3></a></div>
+               class="col loc"><h1>My name is ${ userInfo.name}!</h1> 
+                <h3>${ userInfo.location}</h3></a></div>
             </div>
         </div>
     </div>
@@ -260,7 +267,7 @@ color: ${colors[answers.color].headerColor};
         <div class="col">
             <div class="row">
                 <div class="col">
-                    <h3>${Userinfo.bio}</h3>
+                    <h3>${ userInfo.bio}</h3>
                 </div>  
                 
             </div>
@@ -268,11 +275,11 @@ color: ${colors[answers.color].headerColor};
             <div class="row">
                 <div class="col card">
                     <h3>Public Repositories</h3>
-                    <h3>${Userinfo.public_repos}</h3>
+                    <h3>${ userInfo.public_repos}</h3>
                 </div>
                 <div class="col card">
                     <h3>Followers</h3>
-                    <h3>${Userinfo.followers}</h3>
+                    <h3>${ userInfo.followers}</h3>
                 </div>
                
             </div>
@@ -280,7 +287,7 @@ color: ${colors[answers.color].headerColor};
             <div class="row">
                 <div class="col card">
                 <h3>Following</h3>
-                <h3> ${Userinfo.following}</h3>
+                <h3> ${ userInfo.following}</h3>
                 </div>
                 <div class="col card">
                 <h3>Stars</h3>
