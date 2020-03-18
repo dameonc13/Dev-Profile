@@ -14,7 +14,7 @@ function promptUser() {
         {
             type: "input",
             name: "username",
-            message: "What is your Githubname?"
+            message: "What is your Github name?"
         },
 
         {
@@ -26,9 +26,9 @@ function promptUser() {
 }
 
 
-async function getUser(username) {
+async function getUser(answers) {
 
-    const queryUrl = `https://api.github.com/users/${username}`;
+    const queryUrl = `https://api.github.com/users/${answers.username}`;
     const res = await axios.get(queryUrl)
     return res.data
 
@@ -45,6 +45,12 @@ var generatePDF = function (PDF) {
         }
         console.log("new pdf success!");
     })
+}
+
+async function getStarInfo(answers) {
+    const queryUrl = `https://api.github.com/users/${answers.username}/starred`
+    const res = await axios.get(queryUrl)
+    return res.data
 }
 
 const colors = {
@@ -75,8 +81,30 @@ const colors = {
 };
 
 
+async function init() {
 
-function generateHTML(login, location, public_repos, followers, following, bio, avatar_url, answers, name) {
+    try {
+        const answers = await promptUser();
+        const Userinfo = await getUser(answers);
+        const star = await getStarInfo(answers)
+        
+
+        const html = generateHTML(answers , Userinfo, star  );
+
+        await writeFileAsync("index.html", html);
+
+        convertAsync(html, generatePDF);
+
+        console.log("Successfully wrote to index.html");
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
+
+init();
+
+function generateHTML(answers, Userinfo, star ) {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -201,12 +229,12 @@ function generateHTML(login, location, public_repos, followers, following, bio, 
     <div class="container-fluid">
     <div class="row wrapper">
         <div class="aboutMe">
-            <img src="https://avatars3.githubusercontent.com/u/25015205?v=4" alt="profile picture"></img>    
+            <img src="${Userinfo.avatar_url}" alt="profile picture"></img>    
             <h1>Hi!</h1>    
-            <h1>My name is Dameon Charley!</h1>    
+            <h1>My name is ${Userinfo.name}!</h1>    
             
             <div class="row loc">
-                <div class="col loc"><h3>Windsor CT</h3></a></div>
+                <div class="col loc">${Userinfo.location}<h3></h3></a></div>
             </div>
         </div>
     </div>
@@ -214,8 +242,8 @@ function generateHTML(login, location, public_repos, followers, following, bio, 
         <div class="col">
             <div class="row">
                 <div class="col">
-                    <h3>An accountant who grew a fond for coding</h3>
-                </div>
+                    <h3>${Userinfo.bio}</h3>
+                </div>  
                 
             </div>
             <br>
@@ -248,23 +276,3 @@ function generateHTML(login, location, public_repos, followers, following, bio, 
 
 
 
-async function init() {
-
-    try {
-        const answers = await promptUser();
-        const Userinfo = await getUser(answers.username);
-
-        const html = generateHTML(Userinfo.login, Userinfo.location, Userinfo.public_repos, Userinfo.followers, Userinfo.following, Userinfo.bio, Userinfo.avatar_url, answers.color, Userinfo.name);
-
-        await writeFileAsync("index.html", html);
-
-        convertAsync(html, generatePDF);
-
-        console.log("Successfully wrote to index.html");
-    }
-    catch (err) {
-        console.log(err);
-    }
-}
-
-init();
