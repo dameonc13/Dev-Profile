@@ -4,7 +4,7 @@
   "description": "",
   "main": "script.js",
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "core-util-is": "^1.0.2",
     "fs": "^0.0.1-security",
     "inquirer": "^7.0.4",
